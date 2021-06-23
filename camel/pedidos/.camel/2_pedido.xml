@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pedido>
+    <id>6532463</id>
+    <dataCompra>2013-12-05T18:10:07.963-02:00</dataCompra>
+    <itens>
+        <item>
+            <formato>EBOOK</formato>
+            <quantidade>1</quantidade>
+            <livro>
+                <codigo>ARQ</codigo>
+                <titulo>Introdução à Arquitetura e Design de Software</titulo>
+                <tituloCurto>Arquitetura Java</tituloCurto>
+                <nomeAutor>Paulo Silveira</nomeAutor>
+                <valorEbook>29.90</valorEbook>
+                <valorImpresso>79.90</valorImpresso>
+            </livro>
+        </item>
+    </itens>
+    <pagamento>
+        <status>CONFIRMADO</status>
+        <valor>59.80</valor>
+        <titular>Joana Galindo</titular>
+    </pagamento>
+</pedido>
