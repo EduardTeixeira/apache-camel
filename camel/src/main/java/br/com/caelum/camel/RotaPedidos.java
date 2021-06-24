@@ -44,6 +44,7 @@ public class RotaPedidos {
 					// setHeader(Exchange.HTTP_METHOD, HttpMethods.POST).
 
 					setHeader(Exchange.HTTP_METHOD, HttpMethods.GET).
+					
 					setHeader(Exchange.HTTP_QUERY, simple("ebookId=${property.ebookId}&pedidoId=${property.pedidoId}&clientId=${property.clientId}")).
 
 				to("http4://localhost:8080/webservices/ebook/item");
