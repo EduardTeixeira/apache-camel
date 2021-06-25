@@ -19,35 +19,61 @@ public class RotaPedidos {
 
 				from("file:pedidos?delay=5s&noop=true").
 
-					setProperty("pedidoId", xpath("/pedido/id/text()")).
+						routeId("rota-pedidos").
 
-					setProperty("clientId", xpath("/pedido/pagamento/email-titular/text()")).
+						// UTILIZANDO "seda:rota" ao invés de "direct:rota", não precisamos do multicast() 
+						// multicast(). // usado para que cada rota tenha seus próprios dados de entrada
+						// para que não pegue o retorno da primeira chamada "to" e envie para o segundo "to" como entrada
+						
+							// parallelProcessing().
+							
+								// timeout(500).
 
-					split()
-						.xpath("/pedido/itens/item").
-	
-					filter()
-						.xpath("/item/formato[text()='EBOOK']").
+					to("seda:http").
+
+					to("seda:soap");
+
+				from("seda:http").
+
+						routeId("rota-http").
+
+						setProperty("pedidoId", xpath("/pedido/id/text()")).
+
+						setProperty("email", xpath("/pedido/pagamento/email-titular/text()")).
+
+						split().
+							xpath("/pedido/itens/item").
+		
+						filter().
+							xpath("/item/formato[text()='EBOOK']").
 
 						setProperty("ebookId", xpath("/item/livro/codigo/text()")).
+		
+						// marshal(). // queremos transformar a mensagem em outro formato
+							// xmljson(). // de xml para json
+		
+						// log("${id} \n ${body}").
+		
+						// setHeader("CamelFileName", simple("${id}.json")).
+						// setHeader(Exchange.FILE_NAME, simple("${file:name.noext}.json")).
+						// setHeader(Exchange.FILE_NAME, simple("${file:name.noext}-${header.CamelSplitIndex}.json")).
 
-	
-					marshal(). // queremos transformar a mensagem em outro formato
-						xmljson(). // de xml para json
-	
-					log("${id} \n ${body}").
-	
-					// setHeader("CamelFileName", simple("${id}.json")).
-					// setHeader(Exchange.FILE_NAME, simple("${file:name.noext}.json")).
-					// setHeader(Exchange.FILE_NAME, simple("${file:name.noext}-${header.CamelSplitIndex}.json")).
+						// setHeader(Exchange.HTTP_METHOD, HttpMethods.POST).
 
-					// setHeader(Exchange.HTTP_METHOD, HttpMethods.POST).
+						// setHeader(Exchange.HTTP_METHOD, HttpMethods.GET).
+						
+						setHeader(Exchange.HTTP_QUERY, 
+								simple("clienteId=${property.email}&pedidoId=${property.pedidoId}&ebookId=${property.ebookId}")).
 
-					setHeader(Exchange.HTTP_METHOD, HttpMethods.GET).
-					
-					setHeader(Exchange.HTTP_QUERY, simple("ebookId=${property.ebookId}&pedidoId=${property.pedidoId}&clientId=${property.clientId}")).
+					to("http4://localhost:8080/webservices/ebook/item");
 
-				to("http4://localhost:8080/webservices/ebook/item");
+				from("seda:soap").
+
+						routeId("rota-soap").
+
+						log("chamando servico soap ${body}").
+
+					to("mock:soap"); // para simular um endpoint
 
 			}
 
