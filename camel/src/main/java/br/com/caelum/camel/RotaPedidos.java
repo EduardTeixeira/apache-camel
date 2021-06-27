@@ -2,6 +2,7 @@ package br.com.caelum.camel;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 
@@ -15,10 +16,42 @@ public class RotaPedidos {
 
 			@Override
 			public void configure() throws Exception {
+				
+				/*
+				onException(Exception.class).
+				    handled(true).
+				        maximumRedeliveries(3).
+				            redeliveryDelay(4000).
+				        onRedelivery(new Processor() {
+	
+				            @Override
+				            public void process(Exchange exchange) throws Exception {
+				                    int counter = (int) exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER);
+				                    int max = (int) exchange.getIn().getHeader(Exchange.REDELIVERY_MAX_COUNTER);
+				                    System.out.println("Redelivery - " + counter + "/" + max );;
+				            }
+				    });
+				*/				
+				
+				errorHandler(deadLetterChannel("file:erro") //mensagem venenosa será gravada na pasta erro
+						.logExhaustedMessageHistory(true)
+						// .useOriginalMessage()
+							.maximumRedeliveries(3) //tente 3 vezes
+								.redeliveryDelay(2000) //espera 2 segundo entre as tentativas
+									.onRedelivery(new Processor() {
+										@Override
+										public void process(Exchange exchange) throws Exception {
+											int counter = (int) exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER);
+											int max = (int) exchange.getIn().getHeader(Exchange.REDELIVERY_MAX_COUNTER);
+											System.out.println("Redelivery " + counter + "/" + max);
+										}
+									}));				
 
 				from("file:pedidos?delay=5s&noop=true").
 
 						routeId("rota-pedidos").
+						
+						to("validator:pedido.xsd").
 
 						// UTILIZANDO "seda:rota" ao invés de "direct:rota", não precisamos do multicast() 
 						// multicast(). // usado para que cada rota tenha seus próprios dados de entrada
@@ -28,7 +61,7 @@ public class RotaPedidos {
 							
 								// timeout(500).
 
-					to("seda:http").
+					to("seda:http"). // caso volte para direct:rota, retirar o comentário da linha multicast().
 
 					to("seda:soap");
 
