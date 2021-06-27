@@ -3,7 +3,6 @@ package br.com.caelum.camel;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.http4.HttpMethods;
 import org.apache.camel.impl.DefaultCamelContext;
 
 public class RotaPedidos {
@@ -71,9 +70,15 @@ public class RotaPedidos {
 
 						routeId("rota-soap").
 
-						log("chamando servico soap ${body}").
+						to("xslt:pedido-para-soap.xslt").
+						
+						log("${body}").
+						
+						setHeader(Exchange.CONTENT_TYPE, constant("text/xml")).
+						
+					to("http4://localhost:8080/webservices/financeiro");
 
-					to("mock:soap"); // para simular um endpoint
+					// to("mock:soap"); // para simular um endpoint
 
 			}
 

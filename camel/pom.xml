@@ -72,7 +72,7 @@
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-xstream</artifactId>
 			<version>2.16.1</version>
-		</dependency>		
+		</dependency>
 
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
@@ -90,7 +90,13 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.36</version>
-		</dependency>		
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-velocity</artifactId>
+			<version>2.16.1</version>
+		</dependency>
 
 	</dependencies>
 
